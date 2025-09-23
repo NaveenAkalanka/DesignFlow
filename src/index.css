@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+/* Slim, dark themed scrollbar */
+.table-scroll::-webkit-scrollbar {
+    width: 6px;       /* slim vertical */
+    height: 6px;      /* slim horizontal */
+  }
+  
+  .table-scroll::-webkit-scrollbar-track {
+    background: #10151F; /* same as header background */
+  }
+  
+  .table-scroll::-webkit-scrollbar-thumb {
+    background: #243040; /* muted gray-blue */
+    border-radius: 4px;
+  }
+  
+  .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: #3B82F6; /* accent blue on hover */
+  }
+  
+  /* Firefox support */
+  .table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #243040 #10151F;
+  }
+  
