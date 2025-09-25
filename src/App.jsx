@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./supabaseClient";
+import Login from "./Login";
 import {
   PencilSimple,
   Trash,
@@ -96,6 +97,10 @@ function DropdownPill({ current, options, colorMap, onChange }) {
 }
 
 export default function App() {
+  // === Auth state ===
+  const [user, setUser] = useState(null);
+
+  // === App states ===
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -119,10 +124,27 @@ export default function App() {
   const [newOutlet, setNewOutlet] = useState({ rt_code: "", outlet_name: "" });
   const [editOutlet, setEditOutlet] = useState(null);
 
-  // Load data
+  // === Auth session check ===
   useEffect(() => {
-    loadOutlets();
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data?.user || null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_, session) => setUser(session?.user || null)
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
+
+  // === Load data only when logged in ===
+  useEffect(() => {
+    if (user) {
+      loadOutlets();
+    }
+  }, [user]);
 
   async function loadOutlets() {
     setLoading(true);
@@ -212,15 +234,31 @@ export default function App() {
     );
   }
 
+  // === Conditional UI ===
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#10151F] text-white font-inter pt-6 pb-2">
       <div className="max-w-8xl mx-auto px-35 text-sm sm:text-base md:text-lg">
-        <h1 className="flex items-center text-5xl font-bold mb-6">
-          <img src="/DesignFLow.svg" alt="DesignFlow Logo" className="h-12 mr-4" />
-          <span>DesignFlow</span>
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="flex items-center text-5xl font-bold">
+            <img src="/DesignFLow.svg" alt="DesignFlow Logo" className="h-12 mr-4" />
+            <span className="bg-gradient-to-r font-bold from-[#2D82E3] to-[#00FAFF] p-2 bg-clip-text text-transparent">DesignFlow</span>
+          </h1>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              setUser(null);
+            }}
+            className="px-8 py-2 rounded-xl bg-white text-[#1E1E1E] font-medium flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-white/75"
+          >
+            Logout
+          </button>
+        </div>
 
-        {/* Metrics */}
+        {/* === Metrics === */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           {[
             ["Total Outlets", outlets.length],
@@ -235,16 +273,16 @@ export default function App() {
               className="bg-[#182028] rounded-xl p-2 text-left hover:bg-[#243040] transition-colors duration-200 cursor-pointer"
             >
               <div className="text-m text-white">{label}</div>
-              <div className="text-5xl font-m ">{value}</div>
+              <div className="text-4xl font-m ">{value}</div>
             </div>
           ))}
         </div>
 
-        {/* Top Bar */}
+        {/* === Top Bar === */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <button
             onClick={() => setShowAdd(true)}
-            className="px-8 py-2 rounded-xl bg-white text-[#1E1E1E] font-bold cursor-pointer transition-colors duration-200 hover:bg-gray-200"
+            className="px-8 py-2 rounded-xl bg-white text-[#1E1E1E] font-medium cursor-pointer transition-colors duration-200 hover:bg-gray-200"
           >
             Add Outlet
           </button>
@@ -268,115 +306,58 @@ export default function App() {
           {/* Filter & Reset */}
           <button
             onClick={() => setShowFilter(true)}
-            className="px-8 py-2 rounded-xl bg-white/75 text-[#1E1E1E] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-white"
+            className="px-8 py-2 rounded-xl bg-white text-[#1E1E1E] font-medium flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-white/75"
           >
             <Funnel size={18} /> Filter
           </button>
           <button
             onClick={resetFilters}
-            className="px-8 py-2 rounded-xl bg-red-500 text-white flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-red-600"
+            className="px-8 py-2 rounded-xl bg-red-500 text-white font-medium flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-red-600"
           >
             <ArrowCounterClockwise size={18} /> Reset
           </button>
         </div>
 
-        {/* Table */}
+        {/* === Table === */}
         <div className="rounded-xl p-4 text-sm md:text-base">
           <div className="overflow-x-auto table-scroll">
             <div className="sm:scale-100 scale-90 origin-top-left">
               <div className="overflow-y-auto min-h-[40vh] max-h-[65vh] table-scroll px-3">
-                
-                
                 <table className="w-full table-auto border-separate border-spacing-y-3 bg-transparent">
-                  {/* Sticky header */}
                   <thead className="sticky top-0 z-50 bg-[#10151F]">
                     <tr className="text-left text-sm md:text-base">
-                      <th
-                        className="relative pb-4 px-8 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("rt_code")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>RT Code</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
+                      {[
+                        ["rt_code", "RT Code", "px-8"],
+                        ["outlet_name", "Outlet Name", "px-3"],
+                        ["drive_brand", "Drive Brand", "px-3"],
+                        ["design_status", "Design Status", "px-3"],
+                        ["design_submission", "Submission", "px-3"],
+                        ["design_boq", "BOQ", "px-3"],
+                        ["design_quotation", "Quotation", "px-3"],
+                        ["approval_status", "Approval", "px-3"],
+                      ].map(([key, label, px]) => (
+                        <th
+                          key={key}
+                          className={`relative pb-4 ${px} cursor-pointer hover:text-blue-400 transition-colors border-b border-white`}
+                          onClick={() => toggleSort(key)}
+                        >
+                          <div className="flex items-center gap-1">
+                            <span>{label}</span>
+                            <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                          </div>
+                        </th>
+                      ))}
+                      <th className="relative pb-4 px-3 pr-1 border-b border-white">
+                        Actions
                       </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("outlet_name")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Outlet Name</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("drive_brand")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Drive Brand</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("design_status")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Design Status</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("design_submission")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Submission</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("design_boq")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>BOQ</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("design_quotation")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Quotation</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th
-                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
-                        onClick={() => toggleSort("approval_status")}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span>Approval</span>
-                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
-                        </div>
-                      </th>
-                      <th className="relative pb-4 px-3 pr-1 border-b border-white">Actions</th>
                     </tr>
                   </thead>
 
-
-
-
-                  {/* Body */}
                   <tbody className="border-separate border-spacing-y-3">
                     {!loading &&
                       sorted.map((o) => {
                         const brand =
                           DRIVE_BRAND_COLORS[o.drive_brand] || DRIVE_BRAND_COLORS.NON;
-
                         return (
                           <tr
                             key={o.id}
@@ -385,7 +366,7 @@ export default function App() {
                             {/* RT Code */}
                             <td className="p-0">
                               <div
-                                className="px-8 py-3 min-h-[48px] h-full flex items-center rounded-l-2xl bg-[#182028] group-hover:bg-[#243040] transition-colors truncate"
+                                className="px-8 py-3 min-h-[48px] flex items-center rounded-l-2xl bg-[#182028] group-hover:bg-[#243040] transition-colors truncate"
                                 style={{ color: brand.link }}
                               >
                                 {o.rt_code}
@@ -395,7 +376,7 @@ export default function App() {
                             {/* Outlet Name */}
                             <td className="p-0">
                               <div
-                                className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors truncate"
+                                className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors truncate"
                                 style={{ color: brand.link }}
                               >
                                 {o.outlet_name}
@@ -404,63 +385,55 @@ export default function App() {
 
                             {/* Drive Brand */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.drive_brand}
                                   options={DRIVE_BRAND_COLORS}
                                   colorMap={DRIVE_BRAND_COLORS}
-                                  onChange={(val) =>
-                                    updateField(o.id, "drive_brand", val)
-                                  }
+                                  onChange={(val) => updateField(o.id, "drive_brand", val)}
                                 />
                               </div>
                             </td>
 
                             {/* Design Status */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.design_status}
                                   options={DESIGN_STATUS}
                                   colorMap={DESIGN_STATUS}
-                                  onChange={(val) =>
-                                    updateField(o.id, "design_status", val)
-                                  }
+                                  onChange={(val) => updateField(o.id, "design_status", val)}
                                 />
                               </div>
                             </td>
 
                             {/* Submission */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.design_submission}
                                   options={SUBMISSION_STATUS}
                                   colorMap={SUBMISSION_STATUS}
-                                  onChange={(val) =>
-                                    updateField(o.id, "design_submission", val)
-                                  }
+                                  onChange={(val) => updateField(o.id, "design_submission", val)}
                                 />
                               </div>
                             </td>
 
                             {/* BOQ */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.design_boq}
                                   options={BOQ_STATUS}
                                   colorMap={BOQ_STATUS}
-                                  onChange={(val) =>
-                                    updateField(o.id, "design_boq", val)
-                                  }
+                                  onChange={(val) => updateField(o.id, "design_boq", val)}
                                 />
                               </div>
                             </td>
 
                             {/* Quotation */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.design_quotation}
                                   options={QUOTATION_STATUS}
@@ -474,21 +447,19 @@ export default function App() {
 
                             {/* Approval */}
                             <td className="p-0">
-                              <div className="px-3 py-3 min-h-[48px] h-full flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="px-3 py-3 min-h-[48px] flex items-center bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <DropdownPill
                                   current={o.approval_status}
                                   options={APPROVAL_STATUS}
                                   colorMap={APPROVAL_STATUS}
-                                  onChange={(val) =>
-                                    updateField(o.id, "approval_status", val)
-                                  }
+                                  onChange={(val) => updateField(o.id, "approval_status", val)}
                                 />
                               </div>
                             </td>
 
                             {/* Actions */}
                             <td className="p-0">
-                              <div className="pl-3 pr-2 py-3 min-h-[48px] h-full w-full flex items-center justify-start gap-3 rounded-r-2xl bg-[#182028] group-hover:bg-[#243040] transition-colors">
+                              <div className="pl-3 pr-2 py-3 min-h-[48px] flex items-center justify-start gap-3 rounded-r-2xl bg-[#182028] group-hover:bg-[#243040] transition-colors">
                                 <button
                                   onClick={() => setEditOutlet(o)}
                                   className="cursor-pointer hover:scale-110 transition-transform"
@@ -513,9 +484,7 @@ export default function App() {
           </div>
         </div>
 
-
-
-        {/* Filter, Add, Edit Modals (with hover & cursor) */}
+        {/* === Filter Modal === */}
         {showFilter && (
           <div
             className="fixed inset-0 flex items-center justify-center bg-black/60"
@@ -526,8 +495,6 @@ export default function App() {
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-xl font-bold mb-4">Filter Outlets</h2>
-
-              {/* Filter fields */}
               {[
                 { key: "brand", label: "Drive Brand", options: Object.keys(DRIVE_BRAND_COLORS) },
                 { key: "design", label: "Design Status", options: Object.keys(DESIGN_STATUS) },
@@ -540,7 +507,9 @@ export default function App() {
                   <label className="block mb-1">{f.label}</label>
                   <select
                     value={filters[f.key]}
-                    onChange={(e) => setFilters({ ...filters, [f.key]: e.target.value })}
+                    onChange={(e) =>
+                      setFilters({ ...filters, [f.key]: e.target.value })
+                    }
                     className="w-full px-3 py-2 rounded bg-[#1E1E1E] border border-white/20 text-white cursor-pointer hover:border-blue-400 transition-colors"
                   >
                     <option value="">All</option>
@@ -552,7 +521,6 @@ export default function App() {
                   </select>
                 </div>
               ))}
-
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   onClick={() => setShowFilter(false)}
@@ -571,7 +539,7 @@ export default function App() {
           </div>
         )}
 
-
+        {/* === Add Modal === */}
         {showAdd && (
           <div
             className="fixed inset-0 flex items-center justify-center bg-black/60"
@@ -586,13 +554,17 @@ export default function App() {
                 className="w-full mb-3 px-3 py-2 rounded bg-white/10 text-white"
                 placeholder="RT Code"
                 value={newOutlet.rt_code}
-                onChange={(e) => setNewOutlet({ ...newOutlet, rt_code: e.target.value })}
+                onChange={(e) =>
+                  setNewOutlet({ ...newOutlet, rt_code: e.target.value })
+                }
               />
               <input
                 className="w-full mb-3 px-3 py-2 rounded bg-white/10 text-white"
                 placeholder="Outlet Name"
                 value={newOutlet.outlet_name}
-                onChange={(e) => setNewOutlet({ ...newOutlet, outlet_name: e.target.value })}
+                onChange={(e) =>
+                  setNewOutlet({ ...newOutlet, outlet_name: e.target.value })
+                }
               />
               <div className="flex justify-end gap-3">
                 <button
@@ -612,6 +584,7 @@ export default function App() {
           </div>
         )}
 
+        {/* === Edit Modal === */}
         {editOutlet && (
           <div
             className="fixed inset-0 flex items-center justify-center bg-black/60"
@@ -625,12 +598,16 @@ export default function App() {
               <input
                 className="w-full mb-3 px-3 py-2 rounded bg-white/10 text-white"
                 value={editOutlet.rt_code}
-                onChange={(e) => setEditOutlet({ ...editOutlet, rt_code: e.target.value })}
+                onChange={(e) =>
+                  setEditOutlet({ ...editOutlet, rt_code: e.target.value })
+                }
               />
               <input
                 className="w-full mb-3 px-3 py-2 rounded bg-white/10 text-white"
                 value={editOutlet.outlet_name}
-                onChange={(e) => setEditOutlet({ ...editOutlet, outlet_name: e.target.value })}
+                onChange={(e) =>
+                  setEditOutlet({ ...editOutlet, outlet_name: e.target.value })
+                }
               />
               <div className="flex justify-end gap-3">
                 <button
