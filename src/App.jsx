@@ -241,13 +241,13 @@ export default function App() {
         <div className="flex flex-wrap items-center gap-4 mb-6">
           <button
             onClick={() => setShowAdd(true)}
-            className="px-5 py-2 rounded-full bg-white text-[#1E1E1E] font-bold cursor-pointer transition-colors duration-200 hover:bg-gray-200"
+            className="px-8 py-2 rounded-xl bg-white text-[#1E1E1E] font-bold cursor-pointer transition-colors duration-200 hover:bg-gray-200"
           >
             Add Outlet
           </button>
 
           {/* Search */}
-          <div className="flex-1 flex items-center bg-white/50 rounded-full px-4 min-w-[200px]">
+          <div className="flex-1 flex items-center bg-white/50 rounded-xl px-4 min-w-[200px]">
             <MagnifyingGlass size={20} color="white" />
             <input
               value={search}
@@ -265,13 +265,13 @@ export default function App() {
           {/* Filter & Reset */}
           <button
             onClick={() => setShowFilter(true)}
-            className="px-5 py-2 rounded-full bg-white/75 text-[#1E1E1E] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-white"
+            className="px-8 py-2 rounded-xl bg-white/75 text-[#1E1E1E] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-white"
           >
             <Funnel size={18} /> Filter
           </button>
           <button
             onClick={resetFilters}
-            className="px-5 py-2 rounded-full bg-red-500 text-white flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-red-600"
+            className="px-8 py-2 rounded-xl bg-red-500 text-white flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-red-600"
           >
             <ArrowCounterClockwise size={18} /> Reset
           </button>
@@ -282,21 +282,90 @@ export default function App() {
           <div className="overflow-x-auto table-scroll">
             <div className="sm:scale-100 scale-90 origin-top-left">
               <div className="overflow-y-auto min-h-[40vh] max-h-[65vh] table-scroll px-3">
+                
+                
                 <table className="w-full table-auto border-separate border-spacing-y-3 bg-transparent">
                   {/* Sticky header */}
-                  <thead className="sticky top-0 z-50 bg-[#10151F] relative">
+                  <thead className="sticky top-0 z-50 bg-[#10151F]">
                     <tr className="text-left text-sm md:text-base">
-                      <th className="relative pb-4 px-8">RT Code</th>
-                      <th className="relative pb-4 px-3">Outlet Name</th>
-                      <th className="relative pb-4 px-3">Drive Brand</th>
-                      <th className="relative pb-4 px-3">Design Status</th>
-                      <th className="relative pb-4 px-3">Submission</th>
-                      <th className="relative pb-4 px-3">BOQ</th>
-                      <th className="relative pb-4 px-3">Quotation</th>
-                      <th className="relative pb-4 px-3">Approval</th>
-                      <th className="relative pb-4 px-3 pr-1">Actions</th>
+                      <th
+                        className="relative pb-4 px-8 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("rt_code")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>RT Code</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("outlet_name")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Outlet Name</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("drive_brand")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Drive Brand</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("design_status")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Design Status</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("design_submission")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Submission</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("design_boq")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>BOQ</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("design_quotation")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Quotation</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th
+                        className="relative pb-4 px-3 cursor-pointer hover:text-blue-400 transition-colors border-b border-white"
+                        onClick={() => toggleSort("approval_status")}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>Approval</span>
+                          <CaretUpDown size={18} style={{ transform: "scaleX(1.2)" }} />
+                        </div>
+                      </th>
+                      <th className="relative pb-4 px-3 pr-1 border-b border-white">Actions</th>
                     </tr>
                   </thead>
+
+
+
 
                   {/* Body */}
                   <tbody className="border-separate border-spacing-y-3">
