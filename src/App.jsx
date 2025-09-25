@@ -223,7 +223,7 @@ export default function App() {
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           {[
-            ["Total Projects", outlets.length],
+            ["Total Outlets", outlets.length],
             ["Pending Designs", outlets.filter((o) => o.design_status === "Pending").length],
             ["Pending Submissions", outlets.filter((o) => o.design_submission === "Pending").length],
             ["Pending BOQ", outlets.filter((o) => o.design_boq === "Pending").length],
