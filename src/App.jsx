@@ -215,12 +215,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#10151F] text-white font-inter pt-6 pb-2">
       <div className="max-w-8xl mx-auto px-35 text-sm sm:text-base md:text-lg">
-        <h1 className="text-5xl font-bold mb-6">Lion Outlet Tracker</h1>
+        <h1 className="text-5xl font-bold mb-6">DesignFlow</h1>
 
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           {[
-            ["Total Outlets", outlets.length],
+            ["Total Projects", outlets.length],
             ["Pending Designs", outlets.filter((o) => o.design_status === "Pending").length],
             ["Pending Submissions", outlets.filter((o) => o.design_submission === "Pending").length],
             ["Pending BOQ", outlets.filter((o) => o.design_boq === "Pending").length],
