@@ -39,7 +39,7 @@ export default function Login({ onLogin }) {
                     <h1 className="text-2xl font-medium tracking-wide">
                         Welcome to
                     </h1>
-                    <h1 className="text-6xl font-bold tracking-wide text-4xl bg-gradient-to-r from-[#2D82E3] to-[#00FAFF] bg-clip-text text-transparent p-2">
+                    <h1 className="text-6xl font-bold tracking-wide text-4xl bg-gradient-to-r from-[#2D82E3] to-[#00FAFF] bg-clip-text text-transparent p-3">
                         DesignFlow
                     </h1>
                     <p className="text-gray-400 text-sm mt-2">
@@ -47,7 +47,7 @@ export default function Login({ onLogin }) {
                     </p>
                 </div>
 
-                {/* Form */}
+                {/* Form For Login */}
                 <form onSubmit={handleLogin} className="space-y-5">
                     <div>
                         <label className="block text-sm mb-2">Email</label>
