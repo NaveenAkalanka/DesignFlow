@@ -90,6 +90,12 @@ export default function Login({ onLogin }) {
                 <div className="text-center mt-6 text-sm text-gray-400">
                     © {new Date().getFullYear()} DesignFlow. All rights reserved.
                 </div>
+                <div className="text-center mt-6 text-sm text-gray-400">
+                    Developed by{" "}
+                    <span className="bg-gradient-to-r from-[#9341DF] to-[#1FC2C5] bg-clip-text text-transparent font-semibold">
+                        Naveen Akalanka
+                    </span>
+                </div>
             </div>
         </div>
     );
